@@ -1,3 +1,6 @@
+using HotelListing.Configurations;
+using HotelListing.Data;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 
@@ -11,9 +14,11 @@ builder.Host
             rollingInterval: RollingInterval.Day,
             restrictedToMinimumLevel: LogEventLevel.Information));
 
-Log.Information("Application is starting");
+ConfigurationManager configuration = builder.Configuration;
 
-builder.Services.AddControllers();
+builder.Services.AddDbContext<DatabaseContext>(options => 
+    options.UseSqlServer(configuration.GetConnectionString("SqlConnection"))
+);
 
 builder.Services.AddCors(c =>
 {
@@ -23,8 +28,11 @@ builder.Services.AddCors(c =>
         .AllowAnyHeader());
 });
 
+builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
